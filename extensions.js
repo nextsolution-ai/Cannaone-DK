@@ -2121,10 +2121,10 @@ export const WaitingAnimationExtension = {
           50% { color: #000; }
         }
         .spinner {
-          width: 20px;
-          height: 20px;
-          border: 2px solid #fffc;
-          border-top: 2px solid #CF0A2C;
+          width: 0px;
+          height: 0px;
+          border: 0px solid #fffc;
+          border-top: 0px solid #CF0A2C;
           border-radius: 50%;
           animation: spin 1s linear infinite;
         }
