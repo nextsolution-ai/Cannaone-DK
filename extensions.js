@@ -2091,7 +2091,7 @@ export const WaitingAnimationExtension = {
     await new Promise((resolve) => setTimeout(resolve, 250));
 
     const text = trace.payload?.text || 'Please wait...';
-    const delay = trace.payload?.delay || 3000;
+    const delay = trace.payload?.delay || 8000;
 
     const waitingContainer = document.createElement('div');
     waitingContainer.innerHTML = `
@@ -2110,7 +2110,7 @@ export const WaitingAnimationExtension = {
         }
         .waiting-text {
           display: inline-block;
-          margin-left: 10px;
+          margin-left: -20px;
         }
         .waiting-letter {
           display: inline-block;
@@ -2204,6 +2204,9 @@ export const DoneAnimationExtension = {
     trace.type === 'ext_doneAnimation' ||
     trace.payload?.name === 'ext_doneAnimation',
   run: async () => {
+    // Add a 1-second delay before execution
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     // Continue the flow in Voiceflow
     window.voiceflow.chat.interact({
       type: 'continue',
@@ -2224,7 +2227,7 @@ export const DoneAnimationExtension = {
       waitingMessage.style.display = 'none';
     }
 
-    // Optional delay
+    // Optional additional delay
     await new Promise((resolve) => setTimeout(resolve, 250));
   },
 };
