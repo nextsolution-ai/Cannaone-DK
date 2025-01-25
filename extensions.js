@@ -2317,3 +2317,156 @@ export const FeedbackSpintsoExtension = {
     element.appendChild(feedbackContainer);
   },
 };
+
+export const OpenAIAssistantsV2Extension = {
+  name: 'OpenAIAssistantsV2',
+  type: 'response',
+  match: ({ trace }) =>
+    trace.type === 'ext_openai_assistants_v2' ||
+    (trace.payload && trace.payload.name === 'ext_openai_assistants_v2'),
+
+  render: async ({ trace, element }) => {
+    const { payload } = trace || {};
+    const { apiKey, assistantId, threadId, userMessage } = payload || {};
+
+    // Basic validation
+    if (!apiKey || !assistantId) {
+      element.textContent = "Error: Missing 'apiKey' or 'assistantId'.";
+      return;
+    }
+    if (!userMessage) {
+      element.textContent = "Error: Missing 'userMessage'.";
+      return;
+    }
+
+    // Create a container to show partial text as we get it
+    const responseContainer = document.createElement('div');
+    element.appendChild(responseContainer);
+
+    try {
+      // 1) Send request to create+run a thread or post+run existing thread with "stream": true
+      let sseResponse;
+      if (!threadId || !threadId.match(/^thread_/)) {
+        sseResponse = await fetch('https://api.openai.com/v1/threads/runs', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'OpenAI-Beta': 'assistants=v2'
+          },
+          body: JSON.stringify({
+            assistant_id: assistantId,
+            stream: true,
+            thread: {
+              messages: [{ role: 'user', content: userMessage }]
+            }
+          })
+        });
+      } else {
+        // Existing thread: post user message, then run
+        await fetch(`https://api.openai.com/v1/threads/${threadId}/messages`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'OpenAI-Beta': 'assistants=v2'
+          },
+          body: JSON.stringify({ role: 'user', content: userMessage })
+        });
+
+        sseResponse = await fetch(`https://api.openai.com/v1/threads/${threadId}/runs`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'OpenAI-Beta': 'assistants=v2'
+          },
+          body: JSON.stringify({ assistant_id: assistantId, stream: true })
+        });
+      }
+
+      if (!sseResponse.ok) {
+        throw new Error(`OpenAI SSE Error: ${sseResponse.status}`);
+      }
+
+      // 2) Read the SSE stream. We'll show partial text as soon as it arrives
+      const reader = sseResponse.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+      let done = false;
+
+      // Keep track of partial text for the current assistant message
+      let partialAccumulator = '';
+
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+
+        if (value) {
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const rawLine of lines) {
+            const line = rawLine.trim();
+
+            // We only parse lines that start with "data:"
+            // (we can ignore event: lines if we only want text)
+            if (!line.startsWith('data:')) {
+              continue;
+            }
+
+            // Remove "data:" prefix
+            const dataStr = line.slice('data:'.length).trim();
+            if (dataStr === '[DONE]') {
+              // The SSE stream ended
+              done = true;
+              break;
+            }
+
+            // Parse the JSON chunk
+            let chunk;
+            try {
+              chunk = JSON.parse(dataStr);
+            } catch (err) {
+              // Possibly partial JSON, ignore
+              continue;
+            }
+
+            // 3) Look for partial content in "thread.message.delta"
+            //    e.g. { "object":"thread.message.delta", "delta":{"content":[...]}}
+            if (chunk.object === 'thread.message.delta' && chunk.delta?.content) {
+              // Each delta.content array might have multiple items {type:'text', text:{value:'...'}}
+              for (const contentItem of chunk.delta.content) {
+                if (contentItem.type === 'text') {
+                  // Append new partial text
+                  partialAccumulator += contentItem.text?.value || '';
+                }
+              }
+              // Update the UI with the latest partial text
+              responseContainer.textContent = partialAccumulator;
+            }
+            // 4) If you want, you can also handle "thread.message.completed"
+            //    to finalize, but we already have the full text in partialAccumulator
+            //    by that time.
+          }
+        }
+      }
+
+      // 5) SSE done. If you want to do anything else, do it here
+      if (!partialAccumulator) {
+        responseContainer.textContent = '(No response)';
+      }
+
+      // If using Voiceflow or your system:
+      window.voiceflow?.chat?.interact?.({
+        type: 'complete',
+        payload: {
+          response: partialAccumulator
+        }
+      });
+    } catch (error) {
+      responseContainer.textContent = `Error: ${error.message}`;
+    }
+  }
+};
