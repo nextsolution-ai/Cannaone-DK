@@ -2329,22 +2329,85 @@ export const OpenAIAssistantsV2Extension = {
     const { payload } = trace || {};
     const { apiKey, assistantId, threadId, userMessage } = payload || {};
 
-    // Basic validation
-    if (!apiKey || !assistantId) {
-      element.textContent = "Error: Missing 'apiKey' or 'assistantId'.";
-      return;
-    }
-    if (!userMessage) {
-      element.textContent = "Error: Missing 'userMessage'.";
-      return;
+    if (!document.getElementById('thinkingBubbleStyle')) {
+      const styleEl = document.createElement('style');
+      styleEl.id = 'thinkingBubbleStyle';
+      styleEl.innerHTML = `
+        .vfrc-message--extension-WaitingAnimation {
+          background-color: transparent !important;
+          background: none !important;
+        }
+        .waiting-animation-container {
+          font-family: Arial, sans-serif;
+          font-size: 14px;
+          font-weight: 300;
+          color: #fffc;
+          display: flex;
+          align-items: center;
+        }
+        .waiting-text {
+          display: inline-block;
+          margin-left: -20px;
+        }
+        .waiting-letter {
+          display: inline-block;
+          animation: shine 1s linear infinite;
+        }
+        @keyframes shine {
+          0%, 100% { color: #fffc; }
+          50% { color: #000; }
+        }
+        .spinner {
+          width: 0px;
+          height: 0px;
+          border: 0px solid #fffc;
+          border-top: 0px solid #CF0A2C;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        .response-container {
+          text-align: left;
+          font-family: Arial, sans-serif;
+          font-size: 14px;
+          line-height: 1.5;
+          white-space: pre-wrap;
+        }
+      `;
+      document.head.appendChild(styleEl);
     }
 
-    // Create a container to show partial text as we get it
     const responseContainer = document.createElement('div');
+    responseContainer.classList.add('response-container');
     element.appendChild(responseContainer);
 
+    const thinkingBubble = document.createElement('div');
+    thinkingBubble.classList.add('vfrc-message--extension-WaitingAnimation');
+    const thinkingText = "Thinking...";
+
+    thinkingBubble.innerHTML = `
+      <div class="waiting-animation-container">
+        <div class="spinner"></div>
+        <span class="waiting-text">
+          ${thinkingText
+            .split('')
+            .map((letter, index) =>
+              letter === ' '
+                ? ' '
+                : `<span class="waiting-letter" style="animation-delay: ${
+                    index * (1000 / thinkingText.length)
+                  }ms">${letter}</span>`
+            )
+            .join('')}
+        </span>
+      </div>
+    `;
+    responseContainer.appendChild(thinkingBubble);
+
     try {
-      // 1) Send request to create+run a thread or post+run existing thread with "stream": true
       let sseResponse;
       if (!threadId || !threadId.match(/^thread_/)) {
         sseResponse = await fetch('https://api.openai.com/v1/threads/runs', {
@@ -2363,7 +2426,6 @@ export const OpenAIAssistantsV2Extension = {
           })
         });
       } else {
-        // Existing thread: post user message, then run
         await fetch(`https://api.openai.com/v1/threads/${threadId}/messages`, {
           method: 'POST',
           headers: {
@@ -2389,14 +2451,12 @@ export const OpenAIAssistantsV2Extension = {
         throw new Error(`OpenAI SSE Error: ${sseResponse.status}`);
       }
 
-      // 2) Read the SSE stream. We'll show partial text as soon as it arrives
       const reader = sseResponse.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let buffer = '';
       let done = false;
-
-      // Keep track of partial text for the current assistant message
       let partialAccumulator = '';
+      let firstTextArrived = false;
 
       while (!done) {
         const { value, done: readerDone } = await reader.read();
@@ -2409,63 +2469,65 @@ export const OpenAIAssistantsV2Extension = {
 
           for (const rawLine of lines) {
             const line = rawLine.trim();
-
-            // We only parse lines that start with "data:"
-            // (we can ignore event: lines if we only want text)
             if (!line.startsWith('data:')) {
               continue;
             }
 
-            // Remove "data:" prefix
             const dataStr = line.slice('data:'.length).trim();
             if (dataStr === '[DONE]') {
-              // The SSE stream ended
               done = true;
               break;
             }
 
-            // Parse the JSON chunk
-            let chunk;
+            let json;
             try {
-              chunk = JSON.parse(dataStr);
-            } catch (err) {
-              // Possibly partial JSON, ignore
+              json = JSON.parse(dataStr);
+            } catch {
               continue;
             }
 
-            // 3) Look for partial content in "thread.message.delta"
-            //    e.g. { "object":"thread.message.delta", "delta":{"content":[...]}}
-            if (chunk.object === 'thread.message.delta' && chunk.delta?.content) {
-              // Each delta.content array might have multiple items {type:'text', text:{value:'...'}}
-              for (const contentItem of chunk.delta.content) {
+            if (json.object === 'thread.message.delta' && json.delta?.content) {
+              for (const contentItem of json.delta.content) {
                 if (contentItem.type === 'text') {
-                  // Append new partial text
                   partialAccumulator += contentItem.text?.value || '';
+
+                  if (!firstTextArrived && partialAccumulator) {
+                    firstTextArrived = true;
+                    if (responseContainer.contains(thinkingBubble)) {
+                      responseContainer.removeChild(thinkingBubble);
+                    }
+                  }
+
+                  responseContainer.innerHTML = partialAccumulator
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/\!\[(.*?)\]\((.*?)\)/g, '<img alt="$1" src="$2" style="max-width: 100%; display: block; margin: 10px 0;">')
+                    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
                 }
               }
-              // Update the UI with the latest partial text
-              responseContainer.textContent = partialAccumulator;
             }
-            // 4) If you want, you can also handle "thread.message.completed"
-            //    to finalize, but we already have the full text in partialAccumulator
-            //    by that time.
           }
         }
       }
 
-      // 5) SSE done. If you want to do anything else, do it here
       if (!partialAccumulator) {
+        if (responseContainer.contains(thinkingBubble)) {
+          responseContainer.removeChild(thinkingBubble);
+        }
         responseContainer.textContent = '(No response)';
       }
 
-      // If using Voiceflow or your system:
       window.voiceflow?.chat?.interact?.({
         type: 'complete',
         payload: {
           response: partialAccumulator
         }
       });
+
     } catch (error) {
+      if (responseContainer.contains(thinkingBubble)) {
+        responseContainer.removeChild(thinkingBubble);
+      }
       responseContainer.textContent = `Error: ${error.message}`;
     }
   }
