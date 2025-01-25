@@ -16,7 +16,7 @@
     max-width: 100%;
     display: block;
     margin: 10px 0;
-  }
+}
 
 .response-container ol {
     margin-left: -20px; 
@@ -38,11 +38,4 @@
 
 .response-container ul {
     padding-left: 25px; 
-}
-
-._1ddzqsn1 {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 4px;
-    animation: _17c0nw40 .08s ease-in;
 }
