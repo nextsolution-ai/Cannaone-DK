@@ -2390,37 +2390,50 @@ export const OpenAIAssistantsV2Extension = {
 
     const waitingContainer = document.createElement("div");
     waitingContainer.innerHTML = `
-  <style>
-    /* Remove background for the thinking phase */
-    .vfrc-message--extension-OpenAIAssistantsV2.thinking-phase {
-      background: none !important;
-    }
+      <style>
+        /* Remove background for the thinking phase */
+        .vfrc-message--extension-OpenAIAssistantsV2.thinking-phase {
+          background: none !important;
+        }
 
-    .waiting-animation-container {
-      font-family: Open Sans;
-      font-size: 14px;
-      font-weight: normal;
-      line-height: 1.25;
-      color: rgb(0, 0, 0);
-      -webkit-text-fill-color: transparent;
-      animation-timeline: auto;
-      animation-range-start: normal;
-      animation-range-end: normal;
-      background: linear-gradient(to right, rgb(232, 232, 232) 10%, rgb(153, 153, 153) 30%, rgb(153, 153, 153) 50%, rgb(232, 232, 232) 70%) 0% 0% / 300% text;
-      animation: shimmer 5s linear infinite reverse;
-      text-align: left;
-      margin-left: -10px; 
-      margin-top: 10px; 
-    }
-    @keyframes shimmer {
-      0% { background-position: 300% 0; }
-      100% { background-position: -300% 0; }
-    }
-  </style>
-  <div class="waiting-animation-container">
-    Thinking...
-  </div>
-`;
+        .waiting-animation-container {
+          font-family: Open Sans;
+          font-size: 14px;
+          font-weight: normal;
+          line-height: 1.25;
+          color: rgb(0, 0, 0);
+          -webkit-text-fill-color: transparent;
+          animation-timeline: auto;
+          animation-range-start: normal;
+          animation-range-end: normal;
+          background: linear-gradient(
+            to right,
+            rgb(232, 232, 232) 10%,
+            rgb(153, 153, 153) 30%,
+            rgb(153, 153, 153) 50%,
+            rgb(232, 232, 232) 70%
+          )
+          0% 0% /
+            300% text;
+          animation: shimmer 4s linear infinite reverse;
+          text-align: left;
+          margin-left: -10px;
+          margin-top: 10px;
+        }
+
+        @keyframes shimmer {
+          0% {
+            background-position: 300% 0;
+          }
+          100% {
+            background-position: -300% 0;
+          }
+        }
+      </style>
+      <div class="waiting-animation-container">
+        Thinking...
+      </div>
+    `;
 
     element.appendChild(waitingContainer);
 
@@ -2444,6 +2457,7 @@ export const OpenAIAssistantsV2Extension = {
       let sseResponse;
 
       if (!threadId || !threadId.match(/^thread_/)) {
+        // No threadId provided, or it doesn't match 'thread_...', so create a new one
         sseResponse = await fetch("https://api.openai.com/v1/threads/runs", {
           method: "POST",
           headers: {
@@ -2460,6 +2474,7 @@ export const OpenAIAssistantsV2Extension = {
           }),
         });
       } else {
+        // Existing threadId, so just continue that conversation
         await fetch(`https://api.openai.com/v1/threads/${threadId}/messages`, {
           method: "POST",
           headers: {
@@ -2495,6 +2510,9 @@ export const OpenAIAssistantsV2Extension = {
       let partialAccumulator = "";
       let firstTextArrived = false;
 
+      // <-- ADDED CODE: We'll store the newly created thread ID here if we see it in the SSE.
+      let extractedThreadId = threadId || null;
+
       while (!done) {
         const { value, done: readerDone } = await reader.read();
         done = readerDone;
@@ -2509,6 +2527,7 @@ export const OpenAIAssistantsV2Extension = {
             if (!line.startsWith("data:")) {
               continue;
             }
+
             const dataStr = line.slice("data:".length).trim();
             if (dataStr === "[DONE]") {
               done = true;
@@ -2520,6 +2539,11 @@ export const OpenAIAssistantsV2Extension = {
               json = JSON.parse(dataStr);
             } catch {
               continue;
+            }
+
+            // <-- ADDED CODE: If the object is 'thread.run', capture its thread_id
+            if (json.object === "thread.run" && json.thread_id) {
+              extractedThreadId = json.thread_id;
             }
 
             if (json.object === "thread.message.delta" && json.delta?.content) {
@@ -2551,10 +2575,12 @@ export const OpenAIAssistantsV2Extension = {
         responseContainer.textContent = "(No response)";
       }
 
+      // <-- ADDED CODE: Now we pass the threadId back, along with the text response.
       window.voiceflow?.chat?.interact?.({
         type: "complete",
         payload: {
           response: partialAccumulator,
+          threadId: extractedThreadId, // new or existing threadId
         },
       });
     } catch (error) {
