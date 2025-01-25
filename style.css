@@ -9,6 +9,7 @@
     line-height: 20px;
     border-radius: 10px;
     width: fit-content;
+    padding: 11px 16px 10px;
 }
 
 .vfrc-message.vfrc-message--extension-OpenAIAssistantsV2._1ddzqsn7 img {
@@ -27,6 +28,17 @@
 }
 
 .response-container ol p {
-    margin-left: 20px; /* Adjust this value to move it further to the right */
+    margin-left: 20px; 
 }
 
+.response-container ol {
+    list-style-position: inside; 
+    padding-left: 20px; 
+}
+
+._1ddzqsn1 {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 4px;
+    animation: _17c0nw40 .08s ease-in;
+}
