@@ -10,3 +10,9 @@
     border-radius: 10px;
     width: fit-content;
 }
+
+.vfrc-message.vfrc-message--extension-OpenAIAssistantsV2._1ddzqsn7 img {
+    max-width: 100%;
+    display: block;
+    margin: 10px 0;
+  }
