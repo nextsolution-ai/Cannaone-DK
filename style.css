@@ -16,3 +16,17 @@
     display: block;
     margin: 10px 0;
   }
+
+.response-container ol {
+    margin-left: -20px; 
+    padding-left: 0;    
+}
+
+.response-container {
+    margin-left: -1px;
+}
+
+.response-container ol p {
+    margin-left: 20px; /* Adjust this value to move it further to the right */
+}
+
