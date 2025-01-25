@@ -16,11 +16,11 @@ export const FormExtension = {
         element.style.opacity = isDisabled ? "0.5" : "";
       });
 
-      shadowRoot?.querySelectorAll(
-        ".c-bXTvXv.c-bXTvXv-lckiv-type-info"
-      )?.forEach((button) => {
-        button.disabled = isDisabled;
-      });
+      shadowRoot
+        ?.querySelectorAll(".c-bXTvXv.c-bXTvXv-lckiv-type-info")
+        ?.forEach((button) => {
+          button.disabled = isDisabled;
+        });
     };
 
     const formContainer = document.createElement("form");
@@ -174,12 +174,12 @@ export const TimerExtension = {
 };
 
 export const FileUploadExtension = {
-  name: 'FileUpload',
-  type: 'response',
+  name: "FileUpload",
+  type: "response",
   match: ({ trace }) =>
-    trace.type === 'ext_fileUpload' || trace.payload.name === 'ext_fileUpload',
+    trace.type === "ext_fileUpload" || trace.payload.name === "ext_fileUpload",
   render: ({ trace, element }) => {
-    const fileUploadContainer = document.createElement('div')
+    const fileUploadContainer = document.createElement("div");
     fileUploadContainer.innerHTML = `
       <style>
         .my-file-upload {
@@ -191,61 +191,65 @@ export const FileUploadExtension = {
       </style>
       <div class='my-file-upload'>Drag and drop a file here or click to upload</div>
       <input type='file' style='display: none;'>
-    `
+    `;
 
-    const fileInput = fileUploadContainer.querySelector('input[type=file]')
-    const fileUploadBox = fileUploadContainer.querySelector('.my-file-upload')
+    const fileInput = fileUploadContainer.querySelector("input[type=file]");
+    const fileUploadBox = fileUploadContainer.querySelector(".my-file-upload");
 
-    fileUploadBox.addEventListener('click', function () {
-      fileInput.click()
-    })
+    fileUploadBox.addEventListener("click", function () {
+      fileInput.click();
+    });
 
-    fileInput.addEventListener('change', function () {
-      const file = fileInput.files[0]
-      console.log('File selected:', file)
+    fileInput.addEventListener("change", function () {
+      const file = fileInput.files[0];
+      console.log("File selected:", file);
 
-      fileUploadContainer.innerHTML = `<img src="https://s3.amazonaws.com/com.voiceflow.studio/share/upload/upload.gif" alt="Upload" width="50" height="50">`
+      fileUploadContainer.innerHTML = `<img src="https://s3.amazonaws.com/com.voiceflow.studio/share/upload/upload.gif" alt="Upload" width="50" height="50">`;
 
-      var data = new FormData() 
-      data.append('UPLOADCARE_PUB_KEY', trace.payload.apiKey)
-      data.append('UPLOADCARE_STORE', 'auto')
-      data.append('file', file, file.name)
+      var data = new FormData();
+      data.append("UPLOADCARE_PUB_KEY", trace.payload.apiKey);
+      data.append("UPLOADCARE_STORE", "auto");
+      data.append("file", file, file.name);
 
-      fetch('https://upload.uploadcare.com/base/', {
-        method: 'POST',
+      fetch("https://upload.uploadcare.com/base/", {
+        method: "POST",
         body: data,
       })
         .then((response) => {
           if (response.ok) {
-            return response.json()
+            return response.json();
           } else {
-            throw new Error('Upload failed: ' + response.statusText)
+            throw new Error("Upload failed: " + response.statusText);
           }
         })
         .then((result) => {
           fileUploadContainer.innerHTML =
-            '<img src="https://s3.amazonaws.com/com.voiceflow.studio/share/check/check.gif" alt="Done" width="50" height="50">'
-          console.log('File uploaded:', result.file)
+            '<img src="https://s3.amazonaws.com/com.voiceflow.studio/share/check/check.gif" alt="Done" width="50" height="50">';
+          console.log("File uploaded:", result.file);
 
-          const fileUUID = result.file
-          const fileURL = 'https://ucarecdn.com/' + fileUUID + '/' + encodeURIComponent(file.name)
+          const fileUUID = result.file;
+          const fileURL =
+            "https://ucarecdn.com/" +
+            fileUUID +
+            "/" +
+            encodeURIComponent(file.name);
 
           window.voiceflow.chat.interact({
-            type: 'complete',
+            type: "complete",
             payload: {
               file: fileURL,
             },
-          })
+          });
         })
         .catch((error) => {
-          console.error(error)
-          fileUploadContainer.innerHTML = '<div>Error during upload</div>'
-        })
-    })
+          console.error(error);
+          fileUploadContainer.innerHTML = "<div>Error during upload</div>";
+        });
+    });
 
-    element.appendChild(fileUploadContainer)
+    element.appendChild(fileUploadContainer);
   },
-}
+};
 
 export const KBUploadExtension = {
   name: "KBUpload",
@@ -770,18 +774,18 @@ export const DisableInputExtension = {
     const disableInputs = (isDisabled) => {
       const chatDiv = document.getElementById("voiceflow-chat");
       const shadowRoot = chatDiv?.shadowRoot;
-      
+
       shadowRoot?.querySelectorAll(".vfrc-chat-input")?.forEach((element) => {
         element.disabled = isDisabled;
         element.style.pointerEvents = isDisabled ? "none" : "auto";
         element.style.opacity = isDisabled ? "0.5" : "";
       });
 
-      shadowRoot?.querySelectorAll(
-        ".c-bXTvXv.c-bXTvXv-lckiv-type-info"
-      )?.forEach((button) => {
-        button.disabled = isDisabled;
-      });
+      shadowRoot
+        ?.querySelectorAll(".c-bXTvXv.c-bXTvXv-lckiv-type-info")
+        ?.forEach((button) => {
+          button.disabled = isDisabled;
+        });
     };
 
     disableInputs(isDisabled);
@@ -1422,32 +1426,37 @@ export const CustomScreenExtension = {
   name: "CustomScreen",
   type: "effect",
   match: ({ trace }) => {
-    return trace.type === "ext_customScreen" || trace.payload.name === "ext_customScreen";
+    return (
+      trace.type === "ext_customScreen" ||
+      trace.payload.name === "ext_customScreen"
+    );
   },
   effect: ({ trace }) => {
     const chatDiv = document.getElementById("voiceflow-chat");
     if (chatDiv) {
       const shadowRoot = chatDiv.shadowRoot;
       if (shadowRoot) {
-        const inputContainer = shadowRoot.querySelector('.vfrc-chat-input.c-cNrVYs');
-        const dialogContainer = shadowRoot.querySelector('.vfrc-chat--dialog');
+        const inputContainer = shadowRoot.querySelector(
+          ".vfrc-chat-input.c-cNrVYs"
+        );
+        const dialogContainer = shadowRoot.querySelector(".vfrc-chat--dialog");
 
         if (inputContainer && dialogContainer) {
-          const overlay = document.createElement('div');
-          overlay.style.position = 'absolute';
-          overlay.style.top = '0';
-          overlay.style.left = '0';
-          overlay.style.width = '100%';
-          overlay.style.height = '100%';
-          overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-          overlay.style.zIndex = '2';  
-          
-          const customContainer = document.createElement('div');
-          customContainer.style.position = 'absolute';
-          customContainer.style.zIndex = '3'; 
-          customContainer.style.width = '100%';
-          customContainer.style.bottom = '0';
-          
+          const overlay = document.createElement("div");
+          overlay.style.position = "absolute";
+          overlay.style.top = "0";
+          overlay.style.left = "0";
+          overlay.style.width = "100%";
+          overlay.style.height = "100%";
+          overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+          overlay.style.zIndex = "2";
+
+          const customContainer = document.createElement("div");
+          customContainer.style.position = "absolute";
+          customContainer.style.zIndex = "3";
+          customContainer.style.width = "100%";
+          customContainer.style.bottom = "0";
+
           customContainer.innerHTML = `
             <style>
               .custom-header {
@@ -1554,12 +1563,18 @@ export const CustomScreenExtension = {
           dialogContainer.appendChild(customContainer);
 
           setTimeout(() => {
-            customContainer.querySelector('.custom-header').classList.add('show');
+            customContainer
+              .querySelector(".custom-header")
+              .classList.add("show");
           }, 10);
 
           const slideDownAndRemove = () => {
-            customContainer.querySelector('.custom-header').classList.remove('show');
-            customContainer.querySelector('.custom-header').classList.add('hide');
+            customContainer
+              .querySelector(".custom-header")
+              .classList.remove("show");
+            customContainer
+              .querySelector(".custom-header")
+              .classList.add("hide");
 
             setTimeout(() => {
               customContainer.remove();
@@ -1569,39 +1584,45 @@ export const CustomScreenExtension = {
 
           const handleSelection = (selection) => {
             window.voiceflow.chat.interact({
-              type: 'selection_made',
-              payload: { selection }
+              type: "selection_made",
+              payload: { selection },
             });
             slideDownAndRemove();
           };
 
-          customContainer.querySelectorAll('.custom-button').forEach(button => {
-            button.addEventListener('click', () => {
-              const selection = button.getAttribute('data-selection');
-              handleSelection(selection);
+          customContainer
+            .querySelectorAll(".custom-button")
+            .forEach((button) => {
+              button.addEventListener("click", () => {
+                const selection = button.getAttribute("data-selection");
+                handleSelection(selection);
+              });
             });
-          });
         }
       }
     }
-  }
+  },
 };
 
 export const SkipButtonExtension = {
   name: "SkipButton",
   type: "effect",
   match: ({ trace }) => {
-    return trace.type === "ext_skipButton" || trace.payload.name === "ext_skipButton";
+    return (
+      trace.type === "ext_skipButton" || trace.payload.name === "ext_skipButton"
+    );
   },
   effect: ({ trace }) => {
     const chatDiv = document.getElementById("voiceflow-chat");
     if (chatDiv) {
       const shadowRoot = chatDiv.shadowRoot;
       if (shadowRoot) {
-        const footerContainer = shadowRoot.querySelector('.vfrc-footer--watermark.c-cejRVw');
+        const footerContainer = shadowRoot.querySelector(
+          ".vfrc-footer--watermark.c-cejRVw"
+        );
 
         if (footerContainer) {
-          const skipButtonContainer = document.createElement('div');
+          const skipButtonContainer = document.createElement("div");
           skipButtonContainer.innerHTML = `
             <style>
               .skip-button-container {
@@ -1642,38 +1663,44 @@ export const SkipButtonExtension = {
 
           const handleSkip = () => {
             window.voiceflow.chat.interact({
-              type: 'selection_made',
-              payload: { selection: 'skip' }
+              type: "selection_made",
+              payload: { selection: "skip" },
             });
             skipButtonContainer.remove();
           };
 
-          skipButtonContainer.querySelector('#skip-btn').addEventListener('click', handleSkip);
+          skipButtonContainer
+            .querySelector("#skip-btn")
+            .addEventListener("click", handleSkip);
         }
       }
     }
-  }
+  },
 };
 
 export const SettingsScreenExtension = {
   name: "SettingsScreen",
   type: "effect",
-  match: ({ trace }) => trace.type === "ext_settingsScreen" || trace.payload.name === "ext_settingsScreen",
+  match: ({ trace }) =>
+    trace.type === "ext_settingsScreen" ||
+    trace.payload.name === "ext_settingsScreen",
   effect: ({ trace }) => {
     const chatDiv = document.getElementById("voiceflow-chat");
     if (chatDiv) {
       const shadowRoot = chatDiv.shadowRoot;
       if (shadowRoot) {
-        if (shadowRoot.querySelector('.kebab-menu')) {
+        if (shadowRoot.querySelector(".kebab-menu")) {
           return;
         }
 
-        const header = shadowRoot.querySelector('.vfrc-header.c-iCDrnV');
-        const inputContainer = shadowRoot.querySelector('.vfrc-chat-input.c-cNrVYs');
-        const dialogContainer = shadowRoot.querySelector('.vfrc-chat--dialog');
+        const header = shadowRoot.querySelector(".vfrc-header.c-iCDrnV");
+        const inputContainer = shadowRoot.querySelector(
+          ".vfrc-chat-input.c-cNrVYs"
+        );
+        const dialogContainer = shadowRoot.querySelector(".vfrc-chat--dialog");
 
         if (header && inputContainer && dialogContainer) {
-          const kebabMenu = document.createElement('div');
+          const kebabMenu = document.createElement("div");
           kebabMenu.innerHTML = `
             <style>
               .kebab-menu {
@@ -1819,47 +1846,62 @@ export const SettingsScreenExtension = {
 
           header.insertBefore(kebabMenu, header.firstChild);
 
-          const overlay = kebabMenu.querySelector('.overlay');
-          const settingsScreen = kebabMenu.querySelector('.settings-screen');
+          const overlay = kebabMenu.querySelector(".overlay");
+          const settingsScreen = kebabMenu.querySelector(".settings-screen");
           dialogContainer.appendChild(overlay); // Append the overlay to the dialog container
           dialogContainer.appendChild(settingsScreen); // Append the settings screen to the dialog container
 
-          kebabMenu.querySelector('.kebab-menu').addEventListener('click', (event) => {
-            event.stopPropagation();
-            settingsScreen.classList.toggle('show');
-            overlay.style.display = settingsScreen.classList.contains('show') ? 'block' : 'none';
-          });
-
-          settingsScreen.querySelector('.close-settings').addEventListener('click', () => {
-            settingsScreen.classList.remove('show');
-            overlay.style.display = 'none';
-          });
-
-          settingsScreen.querySelector('#change-language').addEventListener('click', () => {
-            window.voiceflow.chat.interact({
-              type: 'change_language',
-              payload: { action: 'change_language' }
+          kebabMenu
+            .querySelector(".kebab-menu")
+            .addEventListener("click", (event) => {
+              event.stopPropagation();
+              settingsScreen.classList.toggle("show");
+              overlay.style.display = settingsScreen.classList.contains("show")
+                ? "block"
+                : "none";
             });
-            settingsScreen.classList.remove('show');
-            overlay.style.display = 'none';
-          });
 
-          settingsScreen.querySelector('#email-transcript').addEventListener('click', () => {
-            window.voiceflow.chat.interact({
-              type: 'email_transcript',
-              payload: { action: 'email_transcript' }
+          settingsScreen
+            .querySelector(".close-settings")
+            .addEventListener("click", () => {
+              settingsScreen.classList.remove("show");
+              overlay.style.display = "none";
             });
-            settingsScreen.classList.remove('show');
-            overlay.style.display = 'none';
-          });
+
+          settingsScreen
+            .querySelector("#change-language")
+            .addEventListener("click", () => {
+              window.voiceflow.chat.interact({
+                type: "change_language",
+                payload: { action: "change_language" },
+              });
+              settingsScreen.classList.remove("show");
+              overlay.style.display = "none";
+            });
+
+          settingsScreen
+            .querySelector("#email-transcript")
+            .addEventListener("click", () => {
+              window.voiceflow.chat.interact({
+                type: "email_transcript",
+                payload: { action: "email_transcript" },
+              });
+              settingsScreen.classList.remove("show");
+              overlay.style.display = "none";
+            });
 
           const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
               if (mutation.addedNodes.length) {
                 mutation.addedNodes.forEach((node) => {
-                  if (node.nodeType === 1 && node.matches('.vfrc-chat.c-ealvbK.c-ealvbK-hMxnbF-withPrompt-true')) {
-                    settingsScreen.classList.remove('show');
-                    overlay.style.display = 'none';
+                  if (
+                    node.nodeType === 1 &&
+                    node.matches(
+                      ".vfrc-chat.c-ealvbK.c-ealvbK-hMxnbF-withPrompt-true"
+                    )
+                  ) {
+                    settingsScreen.classList.remove("show");
+                    overlay.style.display = "none";
                   }
                 });
               }
@@ -1870,14 +1912,15 @@ export const SettingsScreenExtension = {
         }
       }
     }
-  }
+  },
 };
 
 export const StripeBuyButtonExtension = {
   name: "StripeBuyButton",
   type: "response",
   match: ({ trace }) =>
-    trace.type === "ext_stripeBuyButton" || trace.payload.name === "ext_stripeBuyButton",
+    trace.type === "ext_stripeBuyButton" ||
+    trace.payload.name === "ext_stripeBuyButton",
   render: ({ trace, element }) => {
     const { publishableKey, buyButtonId, sessionId } = trace.payload;
 
@@ -1926,19 +1969,21 @@ export const StripeBuyButtonExtension = {
     // Function to monitor payment status
     const checkPaymentStatus = async (sessionId) => {
       try {
-        const stripe = require('stripe')(trace.payload.secretKey);
+        const stripe = require("stripe")(trace.payload.secretKey);
         const session = await stripe.checkout.sessions.retrieve(sessionId);
 
         console.log("Stripe Session Data:", session);
 
-        if (session.payment_status === 'paid') {
+        if (session.payment_status === "paid") {
           console.log("Payment Status: Paid");
           window.voiceflow.chat.interact({
             type: "complete",
-            payload: { status: 'paid' },
+            payload: { status: "paid" },
           });
         } else {
-          console.log("Payment Status: Not paid, polling again in 5 seconds...");
+          console.log(
+            "Payment Status: Not paid, polling again in 5 seconds..."
+          );
           setTimeout(() => checkPaymentStatus(sessionId), 5000);
         }
       } catch (error) {
@@ -1955,12 +2000,15 @@ export const PlaceholderExtension = {
   name: "Placeholder",
   type: "effect",
   match: ({ trace }) =>
-    trace.type === "ext_placeholder" || trace.payload.name === "ext_placeholder",
+    trace.type === "ext_placeholder" ||
+    trace.payload.name === "ext_placeholder",
   effect: ({ trace }) => {
     const chatDiv = document.getElementById("voiceflow-chat");
     const shadowRoot = chatDiv.shadowRoot;
     const textarea = shadowRoot.querySelector("textarea");
-    const button = shadowRoot.querySelector(".vfrc-chat-input--button.c-iSWgdS");
+    const button = shadowRoot.querySelector(
+      ".vfrc-chat-input--button.c-iSWgdS"
+    );
 
     const fadeDuration = trace.payload.fadeDuration ?? 0;
     const blankDuration = trace.payload.blankDuration ?? 0;
@@ -2000,14 +2048,15 @@ export const PlaceholderExtension = {
 export const DelayEffectExtension = {
   name: "DelayEffect",
   type: "effect",
-  match: ({ trace }) => trace.type === "ext_delay" || trace.payload.name === "ext_delay",
+  match: ({ trace }) =>
+    trace.type === "ext_delay" || trace.payload.name === "ext_delay",
   effect: async ({ trace }) => {
     const { delay } = trace.payload;
 
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
 
     window.voiceflow.chat.interact({ type: "complete" });
-  }
+  },
 };
 
 export const ActivateAvatarExtension = {
@@ -2064,8 +2113,7 @@ export const LanguageDetectionExtension = {
   name: "BrowserData",
   type: "effect",
   match: ({ trace }) =>
-    trace.type === "ext_language" ||
-    trace.payload.name === "ext_language",
+    trace.type === "ext_language" || trace.payload.name === "ext_language",
   effect: async ({ trace }) => {
     const lang = navigator.language || navigator.userLanguage;
 
@@ -2081,19 +2129,19 @@ export const LanguageDetectionExtension = {
 // This extension shows a waiting animation with customizable text and delay
 // Also checking for the vf_done value to stop/hide the animation if it's true
 export const WaitingAnimationExtension = {
-  name: 'WaitingAnimation',
-  type: 'response',
+  name: "WaitingAnimation",
+  type: "response",
   match: ({ trace }) =>
-    trace.type === 'ext_waitingAnimation' ||
-    trace.payload.name === 'ext_waitingAnimation',
+    trace.type === "ext_waitingAnimation" ||
+    trace.payload.name === "ext_waitingAnimation",
   render: async ({ trace, element }) => {
     window.vf_done = true;
     await new Promise((resolve) => setTimeout(resolve, 250));
 
-    const text = trace.payload?.text || 'Please wait...';
+    const text = trace.payload?.text || "Please wait...";
     const delay = trace.payload?.delay || 8000;
 
-    const waitingContainer = document.createElement('div');
+    const waitingContainer = document.createElement("div");
     waitingContainer.innerHTML = `
       <style>
         .vfrc-message--extension-WaitingAnimation {
@@ -2136,15 +2184,15 @@ export const WaitingAnimationExtension = {
       <div class="waiting-animation-container">
         <div class="spinner"></div>
         <span class="waiting-text">${text
-          .split('')
+          .split("")
           .map((letter, index) =>
-            letter === ' '
-              ? ' '
+            letter === " "
+              ? " "
               : `<span class="waiting-letter" style="animation-delay: ${
                   index * (1000 / text.length)
                 }ms">${letter}</span>`
           )
-          .join('')}</span>
+          .join("")}</span>
       </div>
     `;
 
@@ -2152,19 +2200,19 @@ export const WaitingAnimationExtension = {
 
     // Send continue signal to Voiceflow
     window.voiceflow.chat.interact({
-      type: 'continue',
+      type: "continue",
     });
 
     let intervalCleared = false;
     window.vf_done = false;
 
     const removeParentElement = () => {
-      const chatDiv = document.getElementById('voiceflow-chat');
+      const chatDiv = document.getElementById("voiceflow-chat");
       const shadowRoot = chatDiv?.shadowRoot;
 
       // Find the parent container of the WaitingAnimation message
       const parentElement = shadowRoot?.querySelector(
-        '.vfrc-system-response:has(.vfrc-message--extension-WaitingAnimation._1ddzqsn7)'
+        ".vfrc-system-response:has(.vfrc-message--extension-WaitingAnimation._1ddzqsn7)"
       );
       if (parentElement) {
         parentElement.remove(); // Completely remove the parent element
@@ -2174,7 +2222,7 @@ export const WaitingAnimationExtension = {
     const checkDoneInterval = setInterval(() => {
       if (window.vf_done) {
         clearInterval(checkDoneInterval);
-        waitingContainer.style.display = 'none';
+        waitingContainer.style.display = "none";
         window.vf_done = false;
 
         // Remove the parent element when the animation finishes
@@ -2185,7 +2233,7 @@ export const WaitingAnimationExtension = {
     setTimeout(() => {
       if (!intervalCleared) {
         clearInterval(checkDoneInterval);
-        waitingContainer.style.display = 'none';
+        waitingContainer.style.display = "none";
 
         // Remove the parent element after the delay
         removeParentElement();
@@ -2198,33 +2246,33 @@ export const WaitingAnimationExtension = {
 // typically used to signal the completion of a task
 // and hide a previous WaitingAnimation
 export const DoneAnimationExtension = {
-  name: 'DoneAnimation',
-  type: 'effect',
+  name: "DoneAnimation",
+  type: "effect",
   match: ({ trace }) =>
-    trace.type === 'ext_doneAnimation' ||
-    trace.payload?.name === 'ext_doneAnimation',
+    trace.type === "ext_doneAnimation" ||
+    trace.payload?.name === "ext_doneAnimation",
   run: async () => {
     // Add a 1-second delay before execution
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
     // Continue the flow in Voiceflow
     window.voiceflow.chat.interact({
-      type: 'continue',
+      type: "continue",
     });
 
     // Set vf_done to true
     window.vf_done = true;
 
     // Dynamically hide the WaitingAnimation message
-    const chatDiv = document.getElementById('voiceflow-chat');
+    const chatDiv = document.getElementById("voiceflow-chat");
     const shadowRoot = chatDiv?.shadowRoot;
 
     const waitingMessage = shadowRoot?.querySelector(
-      '.vfrc-message.vfrc-message--extension-WaitingAnimation._1ddzqsn7'
+      ".vfrc-message.vfrc-message--extension-WaitingAnimation._1ddzqsn7"
     );
 
     if (waitingMessage) {
-      waitingMessage.style.display = 'none';
+      waitingMessage.style.display = "none";
     }
 
     // Optional additional delay
@@ -2236,7 +2284,8 @@ export const FeedbackSpintsoExtension = {
   name: "Custom_Feedback",
   type: "response",
   match: ({ trace }) =>
-    trace.type === "Custom_Feedback" || trace.payload.name === "Custom_Feedback",
+    trace.type === "Custom_Feedback" ||
+    trace.payload.name === "Custom_Feedback",
   render: ({ trace, element }) => {
     console.log(`Trace from FeedbackExtension: `, trace);
 
@@ -2319,19 +2368,19 @@ export const FeedbackSpintsoExtension = {
 };
 
 export const OpenAIAssistantsV2Extension = {
-  name: 'OpenAIAssistantsV2',
-  type: 'response',
+  name: "OpenAIAssistantsV2",
+  type: "response",
   match: ({ trace }) =>
-    trace.type === 'ext_openai_assistants_v2' ||
-    (trace.payload && trace.payload.name === 'ext_openai_assistants_v2'),
+    trace.type === "ext_openai_assistants_v2" ||
+    (trace.payload && trace.payload.name === "ext_openai_assistants_v2"),
 
   render: async ({ trace, element }) => {
     const { payload } = trace || {};
     const { apiKey, assistantId, threadId, userMessage } = payload || {};
 
-    if (!document.getElementById('thinkingBubbleStyle')) {
-      const styleEl = document.createElement('style');
-      styleEl.id = 'thinkingBubbleStyle';
+    if (!document.getElementById("thinkingBubbleStyle")) {
+      const styleEl = document.createElement("style");
+      styleEl.id = "thinkingBubbleStyle";
       styleEl.innerHTML = `
         .vfrc-message--extension-WaitingAnimation {
           background-color: transparent !important;
@@ -2383,32 +2432,52 @@ export const OpenAIAssistantsV2Extension = {
           width: fit-content;
           white-space: pre-wrap;
         }
+        .response-container .topic {
+          font-weight: bold;
+          margin-top: 15px;
+          margin-bottom: 5px;
+          font-size: 18px;
+        }
+        .response-container .bullet {
+          margin-top: 5px;
+          margin-bottom: 5px;
+          display: block;
+          padding-left: 15px;
+          text-indent: -15px;
+          line-height: 1.5;
+        }
+          .bullet {
+  display: block;
+  padding-left: 15px;
+  text-indent: -15px;
+  line-height: 1;
+}
+
       `;
       document.head.appendChild(styleEl);
     }
 
-    const responseContainer = document.createElement('div');
-    responseContainer.classList.add('response-container');
+    const responseContainer = document.createElement("div");
+    responseContainer.classList.add("response-container");
     element.appendChild(responseContainer);
 
-    const thinkingBubble = document.createElement('div');
-    thinkingBubble.classList.add('vfrc-message--extension-WaitingAnimation');
+    const thinkingBubble = document.createElement("div");
+    thinkingBubble.classList.add("vfrc-message--extension-WaitingAnimation");
     const thinkingText = "Thinking...";
-
     thinkingBubble.innerHTML = `
       <div class="waiting-animation-container">
         <div class="spinner"></div>
         <span class="waiting-text">
           ${thinkingText
-            .split('')
+            .split("")
             .map((letter, index) =>
-              letter === ' '
-                ? ' '
+              letter === " "
+                ? " "
                 : `<span class="waiting-letter" style="animation-delay: ${
                     index * (1000 / thinkingText.length)
                   }ms">${letter}</span>`
             )
-            .join('')}
+            .join("")}
         </span>
       </div>
     `;
@@ -2416,42 +2485,46 @@ export const OpenAIAssistantsV2Extension = {
 
     try {
       let sseResponse;
+
       if (!threadId || !threadId.match(/^thread_/)) {
-        sseResponse = await fetch('https://api.openai.com/v1/threads/runs', {
-          method: 'POST',
+        sseResponse = await fetch("https://api.openai.com/v1/threads/runs", {
+          method: "POST",
           headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-            'OpenAI-Beta': 'assistants=v2'
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+            "OpenAI-Beta": "assistants=v2",
           },
           body: JSON.stringify({
             assistant_id: assistantId,
             stream: true,
             thread: {
-              messages: [{ role: 'user', content: userMessage }]
-            }
-          })
+              messages: [{ role: "user", content: userMessage }],
+            },
+          }),
         });
       } else {
         await fetch(`https://api.openai.com/v1/threads/${threadId}/messages`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-            'OpenAI-Beta': 'assistants=v2'
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+            "OpenAI-Beta": "assistants=v2",
           },
-          body: JSON.stringify({ role: 'user', content: userMessage })
+          body: JSON.stringify({ role: "user", content: userMessage }),
         });
 
-        sseResponse = await fetch(`https://api.openai.com/v1/threads/${threadId}/runs`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-            'OpenAI-Beta': 'assistants=v2'
-          },
-          body: JSON.stringify({ assistant_id: assistantId, stream: true })
-        });
+        sseResponse = await fetch(
+          `https://api.openai.com/v1/threads/${threadId}/runs`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
+              "OpenAI-Beta": "assistants=v2",
+            },
+            body: JSON.stringify({ assistant_id: assistantId, stream: true }),
+          }
+        );
       }
 
       if (!sseResponse.ok) {
@@ -2459,10 +2532,10 @@ export const OpenAIAssistantsV2Extension = {
       }
 
       const reader = sseResponse.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      let buffer = '';
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
       let done = false;
-      let partialAccumulator = '';
+      let partialAccumulator = "";
       let firstTextArrived = false;
 
       while (!done) {
@@ -2471,17 +2544,16 @@ export const OpenAIAssistantsV2Extension = {
 
         if (value) {
           buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
 
           for (const rawLine of lines) {
             const line = rawLine.trim();
-            if (!line.startsWith('data:')) {
+            if (!line.startsWith("data:")) {
               continue;
             }
-
-            const dataStr = line.slice('data:'.length).trim();
-            if (dataStr === '[DONE]') {
+            const dataStr = line.slice("data:".length).trim();
+            if (dataStr === "[DONE]") {
               done = true;
               break;
             }
@@ -2493,10 +2565,10 @@ export const OpenAIAssistantsV2Extension = {
               continue;
             }
 
-            if (json.object === 'thread.message.delta' && json.delta?.content) {
+            if (json.object === "thread.message.delta" && json.delta?.content) {
               for (const contentItem of json.delta.content) {
-                if (contentItem.type === 'text') {
-                  partialAccumulator += contentItem.text?.value || '';
+                if (contentItem.type === "text") {
+                  partialAccumulator += contentItem.text?.value || "";
 
                   if (!firstTextArrived && partialAccumulator) {
                     firstTextArrived = true;
@@ -2505,13 +2577,24 @@ export const OpenAIAssistantsV2Extension = {
                     }
                   }
 
-                  responseContainer.innerHTML = partialAccumulator
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/\!\[(.*?)\]\((.*?)\)/g, '<img alt="$1" src="$2" style="max-width: 100%; display: block; margin: 10px 0;">')
-                    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>')
-                    .replace(/^###\s(.*?)(?=\n|$)/gm, '<strong style="display: block; margin-top: 10px;">$1</strong>')
-                    .replace(/^\-\s(.*?)(?=\n|$)/gm, '<br>• $1');
+                  let formattedText = partialAccumulator
+                    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+                    .replace(
+                      /!\[(.*?)\]\((.*?)\)/g,
+                      '<img alt="$1" src="$2" style="max-width: 100%; display: block; margin: 10px 0;">'
+                    )
+                    .replace(
+                      /\[(.*?)\]\((.*?)\)/g,
+                      '<a href="$2" target="_blank">$1</a>'
+                    )
+                    .replace(/^### (.*?)$/gm, '<div class="header">$1</div>')
+                    .replace(/^\d+\.\s+(.*?)$/gm, '<div class="topic">$1</div>')
+                    .replace(/^\s*[-+*]\s+(.*)$/gm, (_, content) => {
+                      return `<div class="bullet">${content}</div><br>`;
+                    });
+
+                  responseContainer.innerHTML = formattedText;
                 }
               }
             }
@@ -2523,21 +2606,20 @@ export const OpenAIAssistantsV2Extension = {
         if (responseContainer.contains(thinkingBubble)) {
           responseContainer.removeChild(thinkingBubble);
         }
-        responseContainer.textContent = '(No response)';
+        responseContainer.textContent = "(No response)";
       }
 
       window.voiceflow?.chat?.interact?.({
-        type: 'complete',
+        type: "complete",
         payload: {
-          response: partialAccumulator
-        }
+          response: partialAccumulator,
+        },
       });
-
     } catch (error) {
       if (responseContainer.contains(thinkingBubble)) {
         responseContainer.removeChild(thinkingBubble);
       }
       responseContainer.textContent = `Error: ${error.message}`;
     }
-  }
+  },
 };
