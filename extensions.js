@@ -2380,45 +2380,40 @@ export const OpenAIAssistantsV2Extension = {
       return cleanedParts.join(' ');
     }
 
+    const messageElement = element.closest(".vfrc-message--extension-OpenAIAssistantsV2");
+    if (messageElement) {
+      messageElement.classList.add("thinking-phase");
+    }
+
     const waitingContainer = document.createElement("div");
     waitingContainer.innerHTML = `
       <style>
-        .vfrc-message--extension-WaitingAnimation {
-          background-color: transparent !important;
+        .vfrc-message--extension-OpenAIAssistantsV2.thinking-phase {
           background: none !important;
         }
+
         .waiting-animation-container {
-          font-family: Arial, sans-serif;
+          font-family: Open Sans;
           font-size: 14px;
-          font-weight: 300;
-          color: #fffc;
-          display: flex;
-          align-items: center;
+          font-weight: normal;
+          line-height: 1.25;
+          color: rgb(0, 0, 0);
+          -webkit-text-fill-color: transparent;
+          animation-timeline: auto;
+          animation-range-start: normal;
+          animation-range-end: normal;
+          padding-left: -20px;
+          background: linear-gradient(to right, rgb(232, 232, 232) 10%, rgb(153, 153, 153) 30%, rgb(153, 153, 153) 50%, rgb(232, 232, 232) 70%) 0% 0% / 300% text;
+          animation: shimmer 2s linear infinite reverse;
+          text-align: left;
         }
-        .waiting-text {
-          display: inline-block;
-          margin-left: -5px;
-        }
-        .waiting-letter {
-          display: inline-block;
-          animation: shine 1s linear infinite;
+        @keyframes shimmer {
+          0% { background-position: 300% 0; }
+          100% { background-position: -300% 0; }
         }
       </style>
       <div class="waiting-animation-container">
-        <div class="spinner"></div>
-        <span class="waiting-text">
-          ${"Thinking..."
-            .split("")
-            .map(
-              (letter, index) =>
-                letter === " "
-                  ? " "
-                  : `<span class="waiting-letter" style="animation-delay: ${
-                      index * (1000 / "Thinking...".length)
-                    }ms">${letter}</span>`
-            )
-            .join("")}
-        </span>
+        Thinking...
       </div>
     `;
     element.appendChild(waitingContainer);
@@ -2427,6 +2422,11 @@ export const OpenAIAssistantsV2Extension = {
     const removeWaitingContainer = () => {
       if (element.contains(waitingContainer)) {
         element.removeChild(waitingContainer);
+      }
+
+      // Restore the background when the message starts streaming
+      if (messageElement) {
+        messageElement.classList.remove("thinking-phase");
       }
     };
 
