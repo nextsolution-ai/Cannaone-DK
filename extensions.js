@@ -2407,7 +2407,7 @@ export const OpenAIAssistantsV2Extension = {
       animation-range-start: normal;
       animation-range-end: normal;
       background: linear-gradient(to right, rgb(232, 232, 232) 10%, rgb(153, 153, 153) 30%, rgb(153, 153, 153) 50%, rgb(232, 232, 232) 70%) 0% 0% / 300% text;
-      animation: shimmer 4s linear infinite reverse;
+      animation: shimmer 5s linear infinite reverse;
       text-align: left;
       margin-left: -10px; 
       margin-top: 10px; 
