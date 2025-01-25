@@ -2168,17 +2168,6 @@ export const WaitingAnimationExtension = {
           0%, 100% { color: #fffc; }
           50% { color: #000; }
         }
-        .spinner {
-          width: 0px;
-          height: 0px;
-          border: 0px solid #fffc;
-          border-top: 0px solid #CF0A2C;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
         }
       </style>
       <div class="waiting-animation-container">
@@ -2379,6 +2368,17 @@ export const OpenAIAssistantsV2Extension = {
   render: async ({ trace, element }) => {
     const { payload } = trace || {};
     const { apiKey, assistantId, threadId, userMessage } = payload || {};
+
+    function removeCitations(text) {
+      let parts = text.split(' ');
+      let cleanedParts = parts.filter(part => 
+        !part.includes('【') && 
+        !part.includes('†') && 
+        !part.includes('】') && 
+        !part.match(/\[\d+:\d+\]/)
+      );
+      return cleanedParts.join(' ');
+    }
 
     if (!document.getElementById("thinkingBubbleStyle")) {
       const styleEl = document.createElement("style");
@@ -2584,8 +2584,9 @@ export const OpenAIAssistantsV2Extension = {
                   }
 
                   try {
-                    const formattedText = marked.parse(partialAccumulator);
-                    console.debug("Formatted text after Marked.js:", formattedText);
+                    const cleanedText = removeCitations(partialAccumulator);
+                    const formattedText = marked.parse(cleanedText);
+                    console.debug("Formatted text after cleaning and Marked.js:", formattedText);
                     responseContainer.innerHTML = formattedText;
                   } catch (e) {
                     console.error("Error parsing markdown:", e);
