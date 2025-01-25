@@ -2380,10 +2380,9 @@ export const OpenAIAssistantsV2Extension = {
       return cleanedParts.join(' ');
     }
 
-    if (!document.getElementById("thinkingBubbleStyle")) {
-      const styleEl = document.createElement("style");
-      styleEl.id = "thinkingBubbleStyle";
-      styleEl.innerHTML = `
+    const waitingContainer = document.createElement("div");
+    waitingContainer.innerHTML = `
+      <style>
         .vfrc-message--extension-WaitingAnimation {
           background-color: transparent !important;
           background: none !important;
@@ -2398,96 +2397,42 @@ export const OpenAIAssistantsV2Extension = {
         }
         .waiting-text {
           display: inline-block;
-          margin-left: -20px;
+          margin-left: -5px;
         }
         .waiting-letter {
           display: inline-block;
           animation: shine 1s linear infinite;
         }
-        @keyframes shine {
-          0%, 100% { color: #fffc; }
-          50% { color: #000; }
-        }
-        .spinner {
-          width: 0px;
-          height: 0px;
-          border: 0px solid #fffc;
-          border-top: 0px solid #CF0A2C;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        .response-container {
-          text-align: left;
-          color: #1a1e23;
-          font-family: "Open Sans", sans-serif;
-          position: relative;
-          min-height: 41px;
-          min-width: 64px;
-          max-width: 100%;
-          font-size: 14px;
-          line-height: 20px;
-          border-radius: 10px;
-          width: fit-content;
-          white-space: pre-wrap;
-        }
-        .response-container .topic {
-          font-weight: bold;
-          margin-top: 15px;
-          margin-bottom: 5px;
-          font-size: 18px;
-        }
-        .response-container .bullet {
-          margin-top: 5px;
-          margin-bottom: 5px;
-          display: block;
-          padding-left: 15px;
-          text-indent: -15px;
-          line-height: 1.5;
-        }
-        .response-container img {
-          max-width: 100%;
-          display: block;
-          margin: 10px 0;
-        }
-        .bullet {
-          display: block;
-          padding-left: 15px;
-          text-indent: -15px;
-          line-height: 1;
-        }
-      `;
-      document.head.appendChild(styleEl);
-    }
-
-    const responseContainer = document.createElement("div");
-    responseContainer.classList.add("response-container");
-    element.appendChild(responseContainer);
-
-    const thinkingBubble = document.createElement("div");
-    thinkingBubble.classList.add("vfrc-message--extension-WaitingAnimation");
-    const thinkingText = "Thinking...";
-    thinkingBubble.innerHTML = `
+      </style>
       <div class="waiting-animation-container">
         <div class="spinner"></div>
         <span class="waiting-text">
-          ${thinkingText
+          ${"Thinking..."
             .split("")
-            .map((letter, index) =>
-              letter === " "
-                ? " "
-                : `<span class="waiting-letter" style="animation-delay: ${
-                    index * (1000 / thinkingText.length)
-                  }ms">${letter}</span>`
+            .map(
+              (letter, index) =>
+                letter === " "
+                  ? " "
+                  : `<span class="waiting-letter" style="animation-delay: ${
+                      index * (1000 / "Thinking...".length)
+                    }ms">${letter}</span>`
             )
             .join("")}
         </span>
       </div>
     `;
-    responseContainer.appendChild(thinkingBubble);
+    element.appendChild(waitingContainer);
+
+    // Remove the waiting container function
+    const removeWaitingContainer = () => {
+      if (element.contains(waitingContainer)) {
+        element.removeChild(waitingContainer);
+      }
+    };
+
+    const responseContainer = document.createElement("div");
+    responseContainer.classList.add("response-container");
+    element.appendChild(responseContainer);
 
     try {
       let sseResponse;
@@ -2578,15 +2523,12 @@ export const OpenAIAssistantsV2Extension = {
 
                   if (!firstTextArrived && partialAccumulator) {
                     firstTextArrived = true;
-                    if (responseContainer.contains(thinkingBubble)) {
-                      responseContainer.removeChild(thinkingBubble);
-                    }
+                    removeWaitingContainer();
                   }
 
                   try {
                     const cleanedText = removeCitations(partialAccumulator);
                     const formattedText = marked.parse(cleanedText);
-                    console.debug("Formatted text after cleaning and Marked.js:", formattedText);
                     responseContainer.innerHTML = formattedText;
                   } catch (e) {
                     console.error("Error parsing markdown:", e);
@@ -2599,9 +2541,7 @@ export const OpenAIAssistantsV2Extension = {
       }
 
       if (!partialAccumulator) {
-        if (responseContainer.contains(thinkingBubble)) {
-          responseContainer.removeChild(thinkingBubble);
-        }
+        removeWaitingContainer();
         responseContainer.textContent = "(No response)";
       }
 
@@ -2612,9 +2552,7 @@ export const OpenAIAssistantsV2Extension = {
         },
       });
     } catch (error) {
-      if (responseContainer.contains(thinkingBubble)) {
-        responseContainer.removeChild(thinkingBubble);
-      }
+      removeWaitingContainer();
       responseContainer.textContent = `Error: ${error.message}`;
     }
   },
