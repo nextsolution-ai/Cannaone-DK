@@ -2367,6 +2367,8 @@ export const FeedbackSpintsoExtension = {
   },
 };
 
+import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
+
 export const OpenAIAssistantsV2Extension = {
   name: "OpenAIAssistantsV2",
   type: "response",
@@ -2446,13 +2448,17 @@ export const OpenAIAssistantsV2Extension = {
           text-indent: -15px;
           line-height: 1.5;
         }
-          .bullet {
-  display: block;
-  padding-left: 15px;
-  text-indent: -15px;
-  line-height: 1;
-}
-
+        .response-container img {
+          max-width: 100%;
+          display: block;
+          margin: 10px 0;
+        }
+        .bullet {
+          display: block;
+          padding-left: 15px;
+          text-indent: -15px;
+          line-height: 1;
+        }
       `;
       document.head.appendChild(styleEl);
     }
@@ -2577,24 +2583,13 @@ export const OpenAIAssistantsV2Extension = {
                     }
                   }
 
-                  let formattedText = partialAccumulator
-                    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                    .replace(/\*(.*?)\*/g, "<em>$1</em>")
-                    .replace(
-                      /!\[(.*?)\]\((.*?)\)/g,
-                      '<img alt="$1" src="$2" style="max-width: 100%; display: block; margin: 10px 0;">'
-                    )
-                    .replace(
-                      /\[(.*?)\]\((.*?)\)/g,
-                      '<a href="$2" target="_blank">$1</a>'
-                    )
-                    .replace(/^### (.*?)$/gm, '<div class="header">$1</div>')
-                    .replace(/^\d+\.\s+(.*?)$/gm, '<div class="topic">$1</div>')
-                    .replace(/^\s*[-+*]\s+(.*)$/gm, (_, content) => {
-                      return `<div class="bullet">${content}</div><br>`;
-                    });
-
-                  responseContainer.innerHTML = formattedText;
+                  try {
+                    const formattedText = marked.parse(partialAccumulator);
+                    console.debug("Formatted text after Marked.js:", formattedText);
+                    responseContainer.innerHTML = formattedText;
+                  } catch (e) {
+                    console.error("Error parsing markdown:", e);
+                  }
                 }
               }
             }
