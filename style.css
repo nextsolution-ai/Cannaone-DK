@@ -39,3 +39,8 @@
 .response-container ul {
     padding-left: 25px; 
 }
+
+.response-container ol li p {
+    margin: 0;
+    padding-left: 20px;
+}
