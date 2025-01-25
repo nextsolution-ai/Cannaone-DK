@@ -2356,7 +2356,7 @@ export const FeedbackSpintsoExtension = {
   },
 };
 
-import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
+import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 
 export const OpenAIAssistantsV2Extension = {
   name: "OpenAIAssistantsV2",
@@ -2370,52 +2370,58 @@ export const OpenAIAssistantsV2Extension = {
     const { apiKey, assistantId, threadId, userMessage } = payload || {};
 
     function removeCitations(text) {
-      let parts = text.split(' ');
-      let cleanedParts = parts.filter(part => 
-        !part.includes('【') && 
-        !part.includes('†') && 
-        !part.includes('】') && 
-        !part.match(/\[\d+:\d+\]/)
+      let parts = text.split(" ");
+      let cleanedParts = parts.filter(
+        (part) =>
+          !part.includes("【") &&
+          !part.includes("†") &&
+          !part.includes("】") &&
+          !part.match(/\[\d+:\d+\]/)
       );
-      return cleanedParts.join(' ');
+      return cleanedParts.join(" ");
     }
 
-    const messageElement = element.closest(".vfrc-message--extension-OpenAIAssistantsV2");
+    const messageElement = element.closest(
+      ".vfrc-message--extension-OpenAIAssistantsV2"
+    );
     if (messageElement) {
       messageElement.classList.add("thinking-phase");
     }
 
     const waitingContainer = document.createElement("div");
     waitingContainer.innerHTML = `
-      <style>
-        .vfrc-message--extension-OpenAIAssistantsV2.thinking-phase {
-          background: none !important;
-        }
+  <style>
+    /* Remove background for the thinking phase */
+    .vfrc-message--extension-OpenAIAssistantsV2.thinking-phase {
+      background: none !important;
+    }
 
-        .waiting-animation-container {
-          font-family: Open Sans;
-          font-size: 14px;
-          font-weight: normal;
-          line-height: 1.25;
-          color: rgb(0, 0, 0);
-          -webkit-text-fill-color: transparent;
-          animation-timeline: auto;
-          animation-range-start: normal;
-          animation-range-end: normal;
-          padding-left: -20px;
-          background: linear-gradient(to right, rgb(232, 232, 232) 10%, rgb(153, 153, 153) 30%, rgb(153, 153, 153) 50%, rgb(232, 232, 232) 70%) 0% 0% / 300% text;
-          animation: shimmer 2s linear infinite reverse;
-          text-align: left;
-        }
-        @keyframes shimmer {
-          0% { background-position: 300% 0; }
-          100% { background-position: -300% 0; }
-        }
-      </style>
-      <div class="waiting-animation-container">
-        Thinking...
-      </div>
-    `;
+    .waiting-animation-container {
+      font-family: Open Sans;
+      font-size: 14px;
+      font-weight: normal;
+      line-height: 1.25;
+      color: rgb(0, 0, 0);
+      -webkit-text-fill-color: transparent;
+      animation-timeline: auto;
+      animation-range-start: normal;
+      animation-range-end: normal;
+      background: linear-gradient(to right, rgb(232, 232, 232) 10%, rgb(153, 153, 153) 30%, rgb(153, 153, 153) 50%, rgb(232, 232, 232) 70%) 0% 0% / 300% text;
+      animation: shimmer 2s linear infinite reverse;
+      text-align: left;
+      margin-left: -10px; 
+      margin-top: 10px; 
+    }
+    @keyframes shimmer {
+      0% { background-position: 300% 0; }
+      100% { background-position: -300% 0; }
+    }
+  </style>
+  <div class="waiting-animation-container">
+    Thinking...
+  </div>
+`;
+
     element.appendChild(waitingContainer);
 
     // Remove the waiting container function
