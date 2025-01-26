@@ -51085,7 +51085,7 @@ You might need to use a local HTTP server (instead of file://): https://reactjs.
       (e = arguments[n++]) && (t = y4(e)) && (a && (a += " "), (a += t));
     return a;
   }
-  const AS = "https://nextsolution-ai.github.io/Cannaone-DK";
+  const AS = "https://nextsolution-ai.github.io/Cannaone-DK/bundle.mjs";
   var TS = ((e) => (
       (e.START_CHAT = "vfrc-start-chat"),
       (e.SEND_MESSAGE = "vfrc-send-message"),
@@ -53667,7 +53667,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 target: "_blank",
                 rel: "noreferrer",
                 className: yie,
-                children: "Powered by Voiceflow",
+                children: "Powered by Chatlabs",
               }),
             }),
           f && ue.jsx("div", { className: bie }),
@@ -94267,7 +94267,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           if (Ae) return;
           const X = document.createElement("link"),
             N = Ne.replace(/ /g, "+");
-          (X.href = `https://fonts.googleapis.com/css2?family=${N}&display=swap`),
+          (X.href = `https://fonts.googleapis.com/css2?family=Roboto&display=swap`),
             (X.rel = "stylesheet"),
             document.head.appendChild(X);
         }, [Ne]),
