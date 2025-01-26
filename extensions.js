@@ -763,97 +763,67 @@ export const MultiSelectExtension = {
 };
 
 export const DisableInputExtension = {
-  name: 'DisableInput',
-  type: 'effect',
+  name: "DisableInput",
+  type: "effect",
   match: ({ trace }) =>
-    trace.type === 'ext_disableInput' || trace.payload?.name === 'ext_disableInput',
+    trace.type === "ext_disableInput" ||
+    trace.payload.name === "ext_disableInput",
   effect: ({ trace }) => {
-    const { isDisabled } = trace.payload
+    const { isDisabled } = trace.payload;
 
-    function disableInput() {
-      const chatDiv = document.getElementById('voiceflow-chat')
+    const disableInputs = (isDisabled) => {
+      console.log("DisableInputExtension triggered with isDisabled:", isDisabled);
 
-      if (chatDiv) {
-        const shadowRoot = chatDiv.shadowRoot
-        if (shadowRoot) {
-          const chatInput = shadowRoot.querySelector('.vfrc-chat-input')
-          const textarea = shadowRoot.querySelector(
-            'textarea[id^="vf-chat-input--"]'
-          )
-          const button = shadowRoot.querySelector('.vfrc-chat-input--button')
-
-          if (chatInput && textarea && button) {
-            // Add a style tag if it doesn't exist
-            let styleTag = shadowRoot.querySelector('#vf-disable-input-style')
-            if (!styleTag) {
-              styleTag = document.createElement('style')
-              styleTag.id = 'vf-disable-input-style'
-              styleTag.textContent = `
-                .vf-no-border, .vf-no-border * {
-                  border: none !important;
-                }
-                .vf-hide-button {
-                  display: none !important;
-                }
-              `
-              shadowRoot.appendChild(styleTag)
-            }
-
-            function updateInputState() {
-              textarea.disabled = isDisabled
-              if (!isDisabled) {
-                textarea.placeholder = 'Message...'
-                chatInput.classList.remove('vf-no-border')
-                button.classList.remove('vf-hide-button')
-                // Restore original value getter/setter
-                Object.defineProperty(
-                  textarea,
-                  'value',
-                  originalValueDescriptor
-                )
-              } else {
-                textarea.placeholder = ''
-                chatInput.classList.add('vf-no-border')
-                button.classList.add('vf-hide-button')
-                Object.defineProperty(textarea, 'value', {
-                  get: function () {
-                    return ''
-                  },
-                  configurable: true,
-                })
-              }
-
-              // Trigger events to update component state
-              textarea.dispatchEvent(
-                new Event('input', { bubbles: true, cancelable: true })
-              )
-              textarea.dispatchEvent(
-                new Event('change', { bubbles: true, cancelable: true })
-              )
-            }
-
-            // Store original value descriptor
-            const originalValueDescriptor = Object.getOwnPropertyDescriptor(
-              HTMLTextAreaElement.prototype,
-              'value'
-            )
-
-            // Initial update
-            updateInputState()
-          } else {
-            console.error('Chat input, textarea, or button not found')
-          }
-        } else {
-          console.error('Shadow root not found')
-        }
-      } else {
-        console.error('Chat div not found')
+      const chatDiv = document.getElementById("voiceflow-chat");
+      if (!chatDiv) {
+        console.error("Chat container (#voiceflow-chat) not found.");
+        return;
       }
-    }
 
-    disableInput()
+      const shadowRoot = chatDiv.shadowRoot;
+      if (!shadowRoot) {
+        console.error("Shadow root not found for #voiceflow-chat.");
+        return;
+      }
+
+      // Log all elements within the shadow root (optional, for debugging)
+      console.log("Shadow root children:", shadowRoot.children);
+
+      // Disable text areas
+      const textAreas = shadowRoot.querySelectorAll(
+        ".vfrc-chat-input, ._1kk1h6j6"
+      );
+      console.log("Found text areas:", textAreas);
+
+      textAreas.forEach((element) => {
+        element.disabled = isDisabled;
+        element.style.pointerEvents = isDisabled ? "none" : "auto";
+        element.style.opacity = isDisabled ? "0.5" : "";
+        console.log(
+          `Text area ${element.className} disabled state set to: ${isDisabled}`
+        );
+      });
+
+      // Disable buttons
+      const buttons = shadowRoot.querySelectorAll(
+        ".vfrc-button, .ugfae45, #vfrc-send-message"
+      );
+      console.log("Found buttons:", buttons);
+
+      buttons.forEach((button) => {
+        button.disabled = isDisabled;
+        console.log(
+          `Button ${button.className || button.id} disabled state set to: ${isDisabled}`
+        );
+      });
+
+      // Final log for completion
+      console.log("DisableInputExtension completed.");
+    };
+
+    disableInputs(isDisabled);
   },
-}
+};
 
 export const BrowserDataExtension = {
   name: "BrowserData",
