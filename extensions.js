@@ -763,34 +763,97 @@ export const MultiSelectExtension = {
 };
 
 export const DisableInputExtension = {
-  name: "DisableInput",
-  type: "effect",
+  name: 'DisableInput',
+  type: 'effect',
   match: ({ trace }) =>
-    trace.type === "ext_disableInput" ||
-    trace.payload.name === "ext_disableInput",
+    trace.type === 'ext_disableInput' || trace.payload?.name === 'ext_disableInput',
   effect: ({ trace }) => {
-    const { isDisabled } = trace.payload;
+    const { isDisabled } = trace.payload
 
-    const disableInputs = (isDisabled) => {
-      const chatDiv = document.getElementById("voiceflow-chat");
-      const shadowRoot = chatDiv?.shadowRoot;
+    function disableInput() {
+      const chatDiv = document.getElementById('voiceflow-chat')
 
-      shadowRoot?.querySelectorAll(".vfrc-chat-input")?.forEach((element) => {
-        element.disabled = isDisabled;
-        element.style.pointerEvents = isDisabled ? "none" : "auto";
-        element.style.opacity = isDisabled ? "0.5" : "";
-      });
+      if (chatDiv) {
+        const shadowRoot = chatDiv.shadowRoot
+        if (shadowRoot) {
+          const chatInput = shadowRoot.querySelector('.vfrc-chat-input')
+          const textarea = shadowRoot.querySelector(
+            'textarea[id^="vf-chat-input--"]'
+          )
+          const button = shadowRoot.querySelector('.vfrc-chat-input--button')
 
-      shadowRoot
-        ?.querySelectorAll(".c-bXTvXv.c-bXTvXv-lckiv-type-info")
-        ?.forEach((button) => {
-          button.disabled = isDisabled;
-        });
-    };
+          if (chatInput && textarea && button) {
+            // Add a style tag if it doesn't exist
+            let styleTag = shadowRoot.querySelector('#vf-disable-input-style')
+            if (!styleTag) {
+              styleTag = document.createElement('style')
+              styleTag.id = 'vf-disable-input-style'
+              styleTag.textContent = `
+                .vf-no-border, .vf-no-border * {
+                  border: none !important;
+                }
+                .vf-hide-button {
+                  display: none !important;
+                }
+              `
+              shadowRoot.appendChild(styleTag)
+            }
 
-    disableInputs(isDisabled);
+            function updateInputState() {
+              textarea.disabled = isDisabled
+              if (!isDisabled) {
+                textarea.placeholder = 'Message...'
+                chatInput.classList.remove('vf-no-border')
+                button.classList.remove('vf-hide-button')
+                // Restore original value getter/setter
+                Object.defineProperty(
+                  textarea,
+                  'value',
+                  originalValueDescriptor
+                )
+              } else {
+                textarea.placeholder = ''
+                chatInput.classList.add('vf-no-border')
+                button.classList.add('vf-hide-button')
+                Object.defineProperty(textarea, 'value', {
+                  get: function () {
+                    return ''
+                  },
+                  configurable: true,
+                })
+              }
+
+              // Trigger events to update component state
+              textarea.dispatchEvent(
+                new Event('input', { bubbles: true, cancelable: true })
+              )
+              textarea.dispatchEvent(
+                new Event('change', { bubbles: true, cancelable: true })
+              )
+            }
+
+            // Store original value descriptor
+            const originalValueDescriptor = Object.getOwnPropertyDescriptor(
+              HTMLTextAreaElement.prototype,
+              'value'
+            )
+
+            // Initial update
+            updateInputState()
+          } else {
+            console.error('Chat input, textarea, or button not found')
+          }
+        } else {
+          console.error('Shadow root not found')
+        }
+      } else {
+        console.error('Chat div not found')
+      }
+    }
+
+    disableInput()
   },
-};
+}
 
 export const BrowserDataExtension = {
   name: "BrowserData",
@@ -2390,50 +2453,50 @@ export const OpenAIAssistantsV2Extension = {
 
     const waitingContainer = document.createElement("div");
     waitingContainer.innerHTML = `
-      <style>
-        /* Remove background for the thinking phase */
-        .vfrc-message--extension-OpenAIAssistantsV2.thinking-phase {
-          background: none !important;
-        }
+  <style>
+    /* Remove background for the thinking phase */
+    .vfrc-message--extension-OpenAIAssistantsV2.thinking-phase {
+      background: none !important;
+    }
 
-        .waiting-animation-container {
-          font-family: Open Sans;
-          font-size: 14px;
-          font-weight: normal;
-          line-height: 1.25;
-          color: rgb(0, 0, 0);
-          -webkit-text-fill-color: transparent;
-          animation-timeline: auto;
-          animation-range-start: normal;
-          animation-range-end: normal;
-          background: linear-gradient(
-            to right,
-            rgb(232, 232, 232) 10%,
-            rgb(153, 153, 153) 30%,
-            rgb(153, 153, 153) 50%,
-            rgb(232, 232, 232) 70%
-          )
-          0% 0% /
-            300% text;
-          animation: shimmer 4s linear infinite reverse;
-          text-align: left;
-          margin-left: -10px;
-          margin-top: 10px;
-        }
+    .waiting-animation-container {
+      font-family: Open Sans;
+      font-size: 14px;
+      font-weight: normal;
+      line-height: 1.25;
+      color: rgb(0, 0, 0);
+      -webkit-text-fill-color: transparent;
+      animation-timeline: auto;
+      animation-range-start: normal;
+      animation-range-end: normal;
+      background: linear-gradient(
+        to right,
+        rgb(232, 232, 232) 10%,
+        rgb(153, 153, 153) 30%,
+        rgb(153, 153, 153) 50%,
+        rgb(232, 232, 232) 70%
+      )
+      0% 0% /
+        300% text;
+      animation: shimmer 6s linear infinite;
+      text-align: left;
+      margin-left: -10px;
+      margin-top: 10px;
+    }
 
-        @keyframes shimmer {
-          0% {
-            background-position: 300% 0;
-          }
-          100% {
-            background-position: -300% 0;
-          }
-        }
-      </style>
-      <div class="waiting-animation-container">
-        Thinking...
-      </div>
-    `;
+    @keyframes shimmer {
+      0% {
+        background-position: -300% 0;
+      }
+      100% {
+        background-position: 300% 0;
+      }
+    }
+  </style>
+  <div class="waiting-animation-container">
+    Thinking...
+  </div>
+`;
 
     element.appendChild(waitingContainer);
 
