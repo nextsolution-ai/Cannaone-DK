@@ -772,53 +772,29 @@ export const DisableInputExtension = {
     const { isDisabled } = trace.payload;
 
     const disableInputs = (isDisabled) => {
-      console.log("DisableInputExtension triggered with isDisabled:", isDisabled);
-
       const chatDiv = document.getElementById("voiceflow-chat");
-      if (!chatDiv) {
-        console.error("Chat container (#voiceflow-chat) not found.");
-        return;
-      }
+      const shadowRoot = chatDiv?.shadowRoot;
 
-      const shadowRoot = chatDiv.shadowRoot;
       if (!shadowRoot) {
-        console.error("Shadow root not found for #voiceflow-chat.");
         return;
       }
-
-      // Log all elements within the shadow root (optional, for debugging)
-      console.log("Shadow root children:", shadowRoot.children);
 
       // Disable text areas
       const textAreas = shadowRoot.querySelectorAll(
         ".vfrc-chat-input, ._1kk1h6j6"
       );
-      console.log("Found text areas:", textAreas);
-
       textAreas.forEach((element) => {
         element.disabled = isDisabled;
         element.style.pointerEvents = isDisabled ? "none" : "auto";
-        element.style.opacity = isDisabled ? "0.5" : "";
-        console.log(
-          `Text area ${element.className} disabled state set to: ${isDisabled}`
-        );
       });
 
       // Disable buttons
       const buttons = shadowRoot.querySelectorAll(
         ".vfrc-button, .ugfae45, #vfrc-send-message"
       );
-      console.log("Found buttons:", buttons);
-
       buttons.forEach((button) => {
         button.disabled = isDisabled;
-        console.log(
-          `Button ${button.className || button.id} disabled state set to: ${isDisabled}`
-        );
       });
-
-      // Final log for completion
-      console.log("DisableInputExtension completed.");
     };
 
     disableInputs(isDisabled);
