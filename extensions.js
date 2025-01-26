@@ -2432,10 +2432,10 @@ export const OpenAIAssistantsV2Extension = {
 
     @keyframes shimmer {
       0% {
-        background-position: -300% 0;
+        background-position: 300% 0;
       }
       100% {
-        background-position: 300% 0;
+        background-position: -300% 0;
       }
     }
   </style>
