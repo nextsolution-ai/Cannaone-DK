@@ -2462,12 +2462,31 @@ export const OpenAIAssistantsV2Extension = {
     responseContainer.classList.add("response-container");
     element.appendChild(responseContainer);
 
+    // Function to handle retries
+    const fetchWithRetries = async (url, options, retries = 3, delay = 1000) => {
+      for (let attempt = 0; attempt < retries; attempt++) {
+        try {
+          const response = await fetch(url, options);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response;
+        } catch (error) {
+          if (attempt < retries - 1) {
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          } else {
+            throw error;
+          }
+        }
+      }
+    };
+
     try {
       let sseResponse;
 
       if (!threadId || !threadId.match(/^thread_/)) {
         // No threadId provided, or it doesn't match 'thread_...', so create a new one
-        sseResponse = await fetch("https://api.openai.com/v1/threads/runs", {
+        sseResponse = await fetchWithRetries("https://api.openai.com/v1/threads/runs", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${apiKey}`,
@@ -2484,7 +2503,7 @@ export const OpenAIAssistantsV2Extension = {
         });
       } else {
         // Existing threadId, so just continue that conversation
-        await fetch(`https://api.openai.com/v1/threads/${threadId}/messages`, {
+        await fetchWithRetries(`https://api.openai.com/v1/threads/${threadId}/messages`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${apiKey}`,
@@ -2494,7 +2513,7 @@ export const OpenAIAssistantsV2Extension = {
           body: JSON.stringify({ role: "user", content: userMessage }),
         });
 
-        sseResponse = await fetch(
+        sseResponse = await fetchWithRetries(
           `https://api.openai.com/v1/threads/${threadId}/runs`,
           {
             method: "POST",
@@ -2506,10 +2525,6 @@ export const OpenAIAssistantsV2Extension = {
             body: JSON.stringify({ assistant_id: assistantId, stream: true }),
           }
         );
-      }
-
-      if (!sseResponse.ok) {
-        throw new Error(`OpenAI SSE Error: ${sseResponse.status}`);
       }
 
       const reader = sseResponse.body.getReader();
