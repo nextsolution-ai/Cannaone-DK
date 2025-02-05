@@ -53885,7 +53885,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         800: "var(--bcqms88)",
         900: "var(--bcqms89)",
       },
-      fontFamily: "var(--bcqms8a)",
+      fontFamily: "'Open Sans'",
     },
     Uie = '"_1y503110"';
   const wS = `${Uie}, 'Open Sans', 'Arial', 'sans-serif'`;
@@ -94267,7 +94267,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           if (Ae) return;
           const X = document.createElement("link"),
             N = Ne.replace(/ /g, "+");
-          (X.href = `https://fonts.googleapis.com/css2?family=Roboto&display=swap`),
+          (X.href = `https://fonts.googleapis.com/css2?family=Open+Sans&display=swap`),
             (X.rel = "stylesheet"),
             document.head.appendChild(X);
         }, [Ne]),
