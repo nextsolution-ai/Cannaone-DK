@@ -93318,7 +93318,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           fill: "currentColor",
         }),
       }),
-    yB = `${AS}/widget-next/message.png`,
+    yB = `${AS}/message.png`,
     AB = (e) =>
       ue.jsx("svg", {
         width: "24",
