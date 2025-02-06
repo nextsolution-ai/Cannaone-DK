@@ -34143,7 +34143,7 @@ You might need to use a local HTTP server (instead of file://): https://reactjs.
         },
       },
       common: {
-        fontFamily: "UCity Pro",
+        fontFamily: '"Open Sans", Arial, sans-serif',
         launcher: { text: "Test your agent", type: bA.BOTH },
         poweredBy: !0,
         footerLink: { enabled: !0 },
@@ -53885,7 +53885,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         800: "var(--bcqms88)",
         900: "var(--bcqms89)",
       },
-      fontFamily: "'Open Sans'",
+      fontFamily: '"Open Sans", Arial, sans-serif',
     },
     Uie = '"_1y503110"';
   const wS = `${Uie}, 'Open Sans', 'Arial', 'sans-serif'`;
@@ -94267,7 +94267,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           if (Ae) return;
           const X = document.createElement("link"),
             N = Ne.replace(/ /g, "+");
-          (X.href = `https://fonts.googleapis.com/css2?family=Open+Sans&display=swap`),
+          (X.href = `https://fonts.googleapis.com/css2?family=${N}&display=swap`),
             (X.rel = "stylesheet"),
             document.head.appendChild(X);
         }, [Ne]),
