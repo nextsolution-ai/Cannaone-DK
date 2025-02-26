@@ -1,18 +1,18 @@
-.vfrc-message.vfrc-message--extension-OpenAIAssistantsV2._1ddzqsn7 {
-    color: #1a1e23;
-    font-family: Open Sans;
-    position: relative;
-    min-height: 41px;
-    min-width: 64px;
-    max-width: 100%;
-    font-size: 14px;
-    line-height: 20px;
-    border-radius: 10px;
-    width: fit-content;
-    padding: 1px 16px 1px;
+.vfrc-message--extension-OpenAIAssistantsV2 {
+  color: #1a1e23;
+  font-family: "Open Sans", sans-serif;
+  position: relative;
+  min-height: 41px;
+  min-width: 64px;
+  max-width: 100%;
+  font-size: 14px;
+  line-height: 20px;
+  border-radius: 10px;
+  width: fit-content;
+  padding: 1px 16px 1px;
 }
 
-.vfrc-message.vfrc-message--extension-OpenAIAssistantsV2._1ddzqsn7 img {
+.vfrc-message--extension-OpenAIAssistantsV2  img {
     max-width: 100%;
     display: block;
     margin: 10px 0;
