@@ -93608,7 +93608,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           fill: "currentColor",
         }),
       }),
-    CH = `${_C}/widget-next/message.png`,
+    CH = `${_C}/message.png`,
     AH = (e) =>
       oe.jsx("svg", {
         width: "24",
